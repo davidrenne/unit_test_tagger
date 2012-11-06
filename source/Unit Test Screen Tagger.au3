@@ -16,7 +16,7 @@
 #include <GDIPlus.au3>
 Opt("WinTitleMatchMode", 1)
 
-$configurationWizard = IniRead("Unit Test Screen Tagger.ini","Install","Configured","False")	
+$configurationWizard = IniRead("Unit Test Screen Tagger.ini","Install","Configured","False")
 If Not FileExists("Unit Test Screen Tagger.ini") Or $configurationWizard = "False" Then
 	#Region ### START Koda GUI section ### Form=FormCode\Welcome.kxf
 	Global $Radio = 0
@@ -41,6 +41,7 @@ If Not FileExists("Unit Test Screen Tagger.ini") Or $configurationWizard = "Fals
 			Case $Radio3
 				IniWrite("Unit Test Screen Tagger.ini","Install","Type","WEBDATABASE")
 				IniWrite("Unit Test Screen Tagger.ini","WEBDATABASE","IntegrationHandler","add_documents.php")
+				IniWrite("Unit Test Screen Tagger.ini","Paths","AlsoCopyToWebServer","C:\wamp\www\unit_test_tagger\www\screenshots\")
 				ExitLoop
 			Case $Radio2
 				IniWrite("Unit Test Screen Tagger.ini","Install","Type","LOCAL")
@@ -55,14 +56,14 @@ If Not FileExists("Unit Test Screen Tagger.ini") Or $configurationWizard = "Fals
 	GUISetState(@SW_HIDE)
 	IniWrite("Unit Test Screen Tagger.ini","Install","Configured","True")
 	;SET THIS VARIABLE TO EITHER CREATE UNIT TESTS LOCALLY BY CONCATENATING TO AN RTF OR TO A MYSQL DATABASE
-	Global $localOrDatabaseDriven = IniRead("Unit Test Screen Tagger.ini","Install","Type","LOCAL")	
-	
+	Global $localOrDatabaseDriven = IniRead("Unit Test Screen Tagger.ini","Install","Type","LOCAL")
+
 	If $localOrDatabaseDriven = "LOCAL" Then
 		_PreferencesLocal()
-	Else	
+	Else
 		IniWrite("Unit Test Screen Tagger.ini", "DATABASE", "WebProjectsLoadOnStartUpOrEveryTimeScreenIsTaken", "STARTUP")
 		IniWrite("Unit Test Screen Tagger.ini", "DATABASE", "WebProjectLocation","fetch_projects.php")
-		
+
 		$response = MsgBox(4, "FTP Server configuration is highly recommended to sync the images", "Would you like to sync the screenshots to FTP as they are taken?  This is the best as your web documents will not have broken links until you manually FTP")
 		If $response = 6 Then
 			IniWrite("Unit Test Screen Tagger.ini","DATABASE","UseFTP","Yes")
@@ -70,14 +71,14 @@ If Not FileExists("Unit Test Screen Tagger.ini") Or $configurationWizard = "Fals
 		Else
 			IniWrite("Unit Test Screen Tagger.ini","DATABASE","UseFTP","No")
 		EndIf
-		
+
 		If $localOrDatabaseDriven = "DATABASEDIRECT" Or $localOrDatabaseDriven = "WEBDATABASE" Then
 			_PreferencesMYSQL()
 		EndIf
 		_PreferencesURL()
 	EndIf
 Else
-	Global $localOrDatabaseDriven = IniRead("Unit Test Screen Tagger.ini","Install","Type","LOCAL")	
+	Global $localOrDatabaseDriven = IniRead("Unit Test Screen Tagger.ini","Install","Type","LOCAL")
 EndIf
 Opt("TrayMenuMode", 1)
 Opt("TrayOnEventMode", 1)
@@ -444,7 +445,7 @@ Func _PreferencesMYSQL()
 	While 1
 		$nMsg = GUIGetMsg()
 		Switch $nMsg
-			
+
 			Case $GUI_EVENT_CLOSE
 				GUISetState(@SW_HIDE)
 				ExitLoop
@@ -456,12 +457,12 @@ Func _PreferencesMYSQL()
 			IniWrite("Unit Test Screen Tagger.ini","DATABASEDIRECT","mySQLDatabase",GUICtrlRead($databasename))
 			IniWrite("Unit Test Screen Tagger.ini","DATABASEDIRECT","mySQLTable1","unit_test_screenshots")
 			IniWrite("Unit Test Screen Tagger.ini","DATABASEDIRECT","mySQLTable2","unit_test_screenshots_tasks")
-			
-			
+
+
 			If $localOrDatabaseDriven <> "" Then ; And FileExists("www\settings.php")
 				;write out the new connection php file
 				msgbox(0,0,0)
-				
+
 				;if attempt direct mysql connection, if connection then add tables
 
 
@@ -470,13 +471,13 @@ Func _PreferencesMYSQL()
 			$mySQL = _MySQLConnect(GUICtrlRead($UserName), GUICtrlRead($PasswordEdit), GUICtrlRead($databasename), GUICtrlRead($ServerName))
 			If $mySQL = 0 And $localOrDatabaseDriven = "DATABASEDIRECT" Then
 				msgbox(0,"Could not connect", "We still could not connect, please try again")
-			Else		
+			Else
 				GUISetState(@SW_HIDE)
 				ExitLoop
 			EndIf
 		EndSwitch
 	WEnd
-	
+
 EndFunc
 
 Func _PreferencesFTP()
@@ -512,7 +513,7 @@ Func _PreferencesFTP()
 EndFunc
 
 Func _PreferencesAll()
-	
+
 	#Region ### START Koda GUI section ### Form=FormCode\DatabasePrefs.kxf
 	$DatabasePrefs = GUICreate("Database Preferences", 234, 134, 304, 219)
 	$Label1 = GUICtrlCreateLabel("mySQL", 40, 24, 38, 17)
@@ -582,6 +583,8 @@ Func _CopyLastFileToClip()
 EndFunc
 
 Func _GrabDimensions()
+	Global $time
+	$time = @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-" & @SEC
 	$sDataDump = $sMainDataDump & @YEAR & "-" & @MON & "-" & @MDAY & "\"
 	If Not FileExists($sDataDump) Then
 		$res = DirCreate($sDataDump)
@@ -633,9 +636,13 @@ Func _GrabDimensions()
 	EndIf
 	$sFile = _GetFile()
 	_ScreenCapture_Capture($sFile, $aPos[0], $aPos[1], $aPos[2], $aPos[3], False)
-	
-	$moveToFile = StringReplace($sFile, ".png", " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-" & @SEC & ".png")
+
+	$moveToFile = StringReplace($sFile, ".png", " " & $time & ".png")
 	FileMove($sFile, $moveToFile)
+	$alsoCopy = IniRead("Unit Test Screen Tagger.ini","Paths","AlsoCopyToWebServer","")
+	If $alsoCopy <> "" Then
+		FileCopy($moveToFile, $alsoCopy)
+	EndIf
 	$sFile = $moveToFile
 	_WriteLog($sFile, 1)
 	Sleep(1000)
@@ -676,7 +683,7 @@ Func _PreferencesLocal()
 	$autoEmbedPics = GUICtrlCreateCheckbox("", 155, 100, 100, 20)
 	$Label5 = GUICtrlCreateLabel("Auto-Embed Pics", 20, 100, 120, 20)
 	$genericText = GUICtrlCreateInput("", 120, 20, 150, 20)
-	
+
 	GUISwitch($FormPreferences)
 	$val = IniRead("Unit Test Screen Tagger.ini", "LOCAL", "AutoEmbedPics", "False")
 	If $val = "True" Then
@@ -892,7 +899,7 @@ Func _handleInputs($screenShot = 1)
 					GUISetState(@SW_HIDE)
 					ExitLoop
 				EndIf
-			;Case $copy_to_clip 
+			;Case $copy_to_clip
 			;	_CopyLastFileToClip()
 			Case $copy_to_clip_close
 				_CopyLastFileToClip()
@@ -1065,10 +1072,13 @@ Func _handleInputs($screenShot = 1)
 						$project = StringReplace($project,"My Projects:","")
 						IniWrite($sLog, "Custom Projects", StringRegExpReplace(StringStripWS($project, 3), ".*\\", ""), StringRegExpReplace(StringStripWS($project, 3), ".*\\", ""))
 					EndIf
-					
+
 					IniWrite($sLog, $sFunctionalityINIPointer, StringRegExpReplace(StringStripWS(GUICtrlRead($functionality), 3), ".*\\", ""), $sectionNumber)
 					If $screenShot = 1 Or $localOrDatabaseDriven = "DATABASEDIRECT" Or $localOrDatabaseDriven = "WEBDATABASE" Then
 						$fileName = StringRight($sFile, StringLen($sFile) - StringInStr($sFile, "\", 0, -1))
+
+						$useFTP = IniRead("Unit Test Screen Tagger.ini","DATABASE","UseFTP","")
+
 						If $localOrDatabaseDriven = "DATABASEDIRECT" Then
 							$mySQL = _MySQLConnect($mySQLUser, $mySQLPass, $mySQLDatabase, $mySQLServer)
 							If $mySQL = 0 Then
@@ -1093,11 +1103,13 @@ Func _handleInputs($screenShot = 1)
 							$retMySQL = _Query($mySQL, $theQuery)
 							_MySQLEnd($mySQL)
 						ElseIf $localOrDatabaseDriven = "WEBDATABASE" Then
+							If $useFTP = "No" Then
+								$fileName = "ScreenShot " & $time & ".png"
+							EndIf
 							$url = $webUnitTestsAlternativeDataIntegration & "&functionality=" & GUICtrlRead($functionality) & "&project=" & GUICtrlRead($task) & "&unit_test_expected_result=" & StringReplace(GUICtrlRead($unit_test_desc),@CRLF,"{LINE}") & "&unit_test_remarks=" & GUICtrlRead($unit_test_remarks) & "&unit_test_actual_result=" & GUICtrlRead($unit_test_actual) & "&unit_test_inputs=" & GUICtrlRead($unit_test_data_input) & "&unit_test_pass_fail=" & GUICtrlRead($unit_test_pass_fail_desc) & "&revision=" & $sectionNumber & "&file_name=" & $fileName
 							InetGet($url,$sTempDailyDir & $fileName & ".webtransaction.txt",1,0)
 						EndIf
 
-						$useFTP = IniRead("Unit Test Screen Tagger.ini","DATABASE","UseFTP","")
 						If $useFTP = "Yes" Then
 							$file = FileOpen($sTempDailyDir & "ftp.txt", 1)
 							; Check if file opened for writing OK
@@ -1256,8 +1268,12 @@ EndFunc   ;==>_handleFileLinks
 Func _Capt()
 	$sFile = _GetFile()
 	_ScreenCapture_Capture($sFile, 0, 0, @DesktopWidth, @DesktopHeight, False)
-	$moveToFile = StringReplace($sFile, ".png", " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-" & @SEC & ".png")
+	$moveToFile = StringReplace($sFile, ".png", " " & $time & ".png")
 	FileMove($sFile, $moveToFile)
+	$alsoCopy = IniRead("Unit Test Screen Tagger.ini","Paths","AlsoCopyToWebServer","")
+	If $alsoCopy <> "" Then
+		FileCopy($moveToFile, $alsoCopy )
+	EndIf
 	$sFile = $moveToFile
 	_WriteLog($sFile, 3)
 	_handleInputs()
@@ -1284,6 +1300,10 @@ Func _CaptWnd()
 
 	$moveToFile = StringReplace($sFile, ".png", " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-" & @SEC & ".png")
 	FileMove($sFile, $moveToFile)
+	$alsoCopy = IniRead("Unit Test Screen Tagger.ini","Paths","AlsoCopyToWebServer","")
+	If $alsoCopy <> "" Then
+		FileCopy($moveToFile, $alsoCopy)
+	EndIf
 	$sFile = $moveToFile
 	_WriteLog($sFile, 4)
 	_handleInputs()
@@ -1427,51 +1447,51 @@ EndFunc
 
 Func _ImageResize($sInImage, $sOutImage, $iW, $iH)
     Local $hWnd, $hDC, $hBMP, $hImage1, $hImage2, $hGraphic, $CLSID, $i = 0
-    
+
     ;OutFile path, to use later on.
     Local $sOP = StringLeft($sOutImage, StringInStr($sOutImage, "\", 0, -1))
-    
+
     ;OutFile name, to use later on.
     Local $sOF = StringMid($sOutImage, StringInStr($sOutImage, "\", 0, -1) + 1)
-    
+
     ;OutFile extension , to use for the encoder later on.
     Local $Ext = StringUpper(StringMid($sOutImage, StringInStr($sOutImage, ".", 0, -1) + 1))
-    
+
     ; Win api to create blank bitmap at the width and height to put your resized image on.
     $hWnd = _WinAPI_GetDesktopWindow()
     $hDC = _WinAPI_GetDC($hWnd)
     $hBMP = _WinAPI_CreateCompatibleBitmap($hDC, $iW, $iH)
     _WinAPI_ReleaseDC($hWnd, $hDC)
-    
+
     ;Start GDIPlus
     _GDIPlus_Startup()
-    
+
     ;Get the handle of blank bitmap you created above as an image
     $hImage1 = _GDIPlus_BitmapCreateFromHBITMAP ($hBMP)
-    
+
     ;Load the image you want to resize.
     $hImage2 = _GDIPlus_ImageLoadFromFile($sInImage)
-    
+
     ;Get the graphic context of the blank bitmap
     $hGraphic = _GDIPlus_ImageGetGraphicsContext ($hImage1)
-    
+
     ;Draw the loaded image onto the blank bitmap at the size you want
     _GDIPLus_GraphicsDrawImageRect($hGraphic, $hImage2, 0, 0, $iW, $iW)
-    
+
     ;Get the encoder of to save the resized image in the format you want.
     $CLSID = _GDIPlus_EncodersGetCLSID($Ext)
-    
+
     ;Generate a number for out file that doesn't already exist, so you don't overwrite an existing image.
-    Do 
+    Do
         $i += 1
     Until (Not FileExists($sOP & $i & "_" & $sOF))
-    
+
     ;Prefix the number to the begining of the output filename
     $sOutImage = $sOP & $sOF
-    
+
     ;Save the new resized image.
     _GDIPlus_ImageSaveToFileEx($hImage1, $sOutImage, $CLSID)
-    
+
     ;Clean up and shutdown GDIPlus.
     _GDIPlus_ImageDispose($hImage1)
     _GDIPlus_ImageDispose($hImage2)
