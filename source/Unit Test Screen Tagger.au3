@@ -944,7 +944,7 @@ Func _handleInputs($screenShot = 1)
 					EndIf
 
 					If $screenShot = 1 Then
-						$moveToFile = StringReplace(StringReplace($sFile, " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-", " - " & $sFunctionalitySectionValue & " - " & @UserName & " - 1." & $sectionNumber & " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN), " ", "_")
+						$moveToFile = StringReplace(StringReplace($sFile, " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN & "-", " - " & @UserName & " - 1." & $sectionNumber & " " & @MON & "-" & @MDAY & "-" & @YEAR & " " & @HOUR & "-" & @MIN), " ", "_")
 						FileMove($sFile, $moveToFile)
 						$sFile = $moveToFile
 					EndIf
@@ -1404,7 +1404,7 @@ Func _GDIPlus_ImageCreateGDICompatibleHBITMAP($hImg)
     _WinAPI_DeleteObject($hBitmap2)
     Return $hBitmap
 EndFunc
- 
+
 
 ;===============================================================================
 ;
