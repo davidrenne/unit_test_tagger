@@ -1,9 +1,8 @@
-<?
-
+<?php
 /*
  * @file:    index.php
  * @usage:   pass user to it and select your project screenshots
- */
+ */ 
 	require_once("settings.php");
 	$unitTestQuery =
 	"
@@ -58,7 +57,7 @@
 
 	Just click on your project to get started
 	<ul>
-		<?
+		<?php
 		if (sizeof($allRows) > 0) {
 			foreach ($allRows as $k=>$v) {
 				echo "
@@ -84,7 +83,7 @@
 <div class="right">
 
 <h2>Help</h2>
-<h2><a href="build_document_descs_only.php?by_date=today&user=<?=$_GET['user']?>&field=unit_test_expected_result">View <?=$_GET['user']?>'s Current Screens From Today</h2>
+<h2><a href="build_document_descs_only.php?by_date=today&user=<?php=$_GET['user']?>&field=unit_test_expected_result">View <?php=$_GET['user']?>'s Current Screens From Today</h2>
 <h2><a href="build_document.php?user=ALL&task_id=1">View The Unit Test Tagger Documentation</h2>
 <h2><a href="download.php?file=Unit Test Screen Tagger.exe">Download The Program</h2>
 
@@ -100,7 +99,7 @@
 
 <div id="footer">
 </div>
-<?
+<?php
 	} elseif (!isset($allRows) && isset($_GET['user'])) {
 		echo "Please take some screenshots before using this web interface.
 		We could not find any unit tests under this developer name you entered.

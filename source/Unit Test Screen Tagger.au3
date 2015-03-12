@@ -367,7 +367,7 @@ EndIf
 
 ;Load Tasks
 $val = IniRead("Unit Test Screen Tagger.ini", "DATABASE", "WebProjectsLoadOnStartUpOrEveryTimeScreenIsTaken", "EMPTY")
-If ($val = "STARTUP" And $localOrDatabaseDriven <> "LOCAL" ) Or $val = "EMPTY" Then
+If ($val = "STARTUP" And $localOrDatabaseDriven <> "LOCAL" ) Then
 	GUICtrlSetData($task, '')
 	If $val <> "EMPTY" Or $localOrDatabaseDriven <> "LOCAL"  Then
 		FileDelete($sMainDataDump & "tasks.txt")
@@ -1404,25 +1404,7 @@ Func _GDIPlus_ImageCreateGDICompatibleHBITMAP($hImg)
     _WinAPI_DeleteObject($hBitmap2)
     Return $hBitmap
 EndFunc
-
-;===============================================================================
-;
-; Function Name:   _WinAPI_CopyImage
-; Description::    Copies an image, also makes GDIPlus-HBITMAP to GDI32-BITMAP
-; Parameter(s):    $hImg -> HBITMAP Object, GDI or GDIPlus
-; Requirement(s):  WinAPI.au3
-; Return Value(s): Succes: Handle to new Bitmap, Error: 0
-; Author(s):       Prog@ndy
-;
-;===============================================================================
-;
-Func _WinAPI_CopyImage($hImg,$uType=0,$x=0,$y=0,$flags=0)
-    Local $aResult
-
-    $aResult = DllCall("User32.dll", "hwnd", "CopyImage", "hwnd", $hImg,"UINT",$uType,"int",$x,"int",$y,"UINT",$flags)
-    _WinAPI_Check("_WinAPI_CopyImage", ($aResult[0] = 0), 0, True)
-    Return $aResult[0]
-EndFunc   ;==>_WinAPI_CopyIcon
+ 
 
 ;===============================================================================
 ;

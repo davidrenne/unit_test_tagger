@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
  * @file:    build_document_descs_only.php

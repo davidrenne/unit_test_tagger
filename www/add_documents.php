@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
  * @file:    add_documents.php

@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * @file:    build_document.php
  * @info:    the goods

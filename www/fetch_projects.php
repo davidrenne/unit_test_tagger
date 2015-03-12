@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
  * @file:    fetch_projects.php
