@@ -25,7 +25,7 @@
       $by_task
       units.developer = '".$_GET['user']."' $extraQs
    ORDER BY
-      tasks.task_pk, units.unit_test_time, units.functionality $asc
+      tasks.task_pk, units.functionality, units.revision $asc
    ";
    $results = mysql_query($unitTestQuery);
    $count = mysql_num_rows($results);
@@ -119,11 +119,7 @@ EOD;
          }
 
          $functionality = ($_GET['by_date']) ? $row['task_desc'].' - '.$row['functionality'] : $row['functionality'];
-
-         if (!isset($_GET['hide_edit'])) {
-            $st = "<a href=\"#$i\">";
-            $end = "</a>";
-         }
+ 
          $out .= (!isset($_GET['wiki'])) ?  "
             <li>
                $section<strong>".$functionality."</strong>
@@ -154,7 +150,7 @@ EOD;
          } else {
             $identifier = $row['time'];
          }
-         if (!isset($_GET['hide_edit'])) {
+         if (false && !isset($_GET['hide_edit'])) {
             $editLink = "<a href=\"{$pathToInstall}manage_unit_tests/?action=update_unit_test_screenshots&unit_test_id={$row['unit_test_id']}\">(Edit)</a>";
          }
          $remarks = (!isset($_GET['wiki'])) ?  "<span class=\"remark\">".$identifier." $editLink : <strong>".str_replace("\n","<br/>",$row[$_GET['field']])."</strong><span><br/>" : "$ii.".$row['revision'].": <strong>".$row[$_GET['field']]."</strong>";
